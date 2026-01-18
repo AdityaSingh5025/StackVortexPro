@@ -1,10 +1,7 @@
-// Import the required modules
 const express = require("express")
 const router = express.Router()
 
-// Import the Controllers
 
-// Course Controllers Import
 const {
   createCourse,
   showAllCourses,
@@ -19,7 +16,7 @@ const {
   updateCourseProgress
 } = require("../controllers/courseProgress");
 
-// Categories Controllers Import
+
 const {
   showAllCategories,
   createCategory,
@@ -40,19 +37,18 @@ const {
   deleteSubSection,
 } = require("../controllers/SubSection")
 
-// Rating Controllers Import
+
 const {
   createRating,
   getAverageRating,
   getAllRating,
 } = require("../controllers/RatingAndReview")
 
-// Importing Middlewares
+
 const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth")
 
-// ********************************************************************************************************
+
 //                                      Course routes
-// ********************************************************************************************************
 
 // Courses can Only be Created by Instructors
 router.post("/createCourse", auth, isInstructor, createCourse)
@@ -82,18 +78,15 @@ router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
 router.delete("/deleteCourse", deleteCourse)
 router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress);
 
-// ********************************************************************************************************
-//                                      Category routes (Only by Admin)
-// ********************************************************************************************************
+//                         Category routes (Only by Admin)
+
 // Category can Only be Created by Admin
-// TODO: Put IsAdmin Middleware here
 router.post("/createCategory", auth, isAdmin, createCategory)
 router.get("/showAllCategories", showAllCategories)
 router.post("/getCategoryPageDetails", categoryPageDetails)
 
-// ********************************************************************************************************
 //                                      Rating and Review
-// ********************************************************************************************************
+
 router.post("/createRating", auth, isStudent, createRating)
 router.get("/getAverageRating", getAverageRating)
 router.get("/getReviews", getAllRating)

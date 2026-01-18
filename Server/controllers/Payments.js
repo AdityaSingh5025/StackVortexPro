@@ -7,6 +7,8 @@ const { default: mongoose, Mongoose } = require("mongoose");
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail");
 const crypto = require("crypto");
 const CourseProgress = require("../models/CourseProgress")
+
+
 exports.capturePayment = async (req, res) => {
     const {courses} = req.body;
     const userId =  req.user.id;

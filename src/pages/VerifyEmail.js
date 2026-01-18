@@ -6,19 +6,44 @@ import { RxCountdownTimer } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import { sendOtp, signUp } from "../services/operations/authAPI";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const VerifyEmail = () => {
     const [otp, setOtp] = useState('');
+    const [resendCooldown, setResendCooldown] = useState(0);
+    const [otpCreatedTime, setOtpCreatedTime] = useState(null);
     const {loading, signupData} = useSelector((state)=> state.auth);
     const dispatch= useDispatch();
     const navigate = useNavigate();
     
     useEffect(() => {
       if(!signupData) navigate('/signup')
+      // Set OTP creation time when component mounts (OTP was just sent)
+      setOtpCreatedTime(Date.now());
+      // Start cooldown timer for initial OTP send
+      setResendCooldown(60); // Disable resend for 60 seconds initially
     }, [])
+
+    // Countdown timer for resend OTP
+    useEffect(() => {
+      if (resendCooldown > 0) {
+        const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [resendCooldown]);
     
     const handleVerifyAndSignup = (e) => {
         e.preventDefault();
+        
+        // Check if OTP has expired (older than 10 minutes)
+        if (otpCreatedTime) {
+          const timeDiff = (Date.now() - otpCreatedTime) / 1000 / 60; // in minutes
+          if (timeDiff > 10) {
+            toast.error("OTP has expired. Please request a new one.");
+            return;
+          }
+        }
+        
         const {
             accountType,
             firstName,
@@ -36,6 +61,27 @@ const VerifyEmail = () => {
             otp, navigate))
     }
 
+    const handleResendOtp = () => {
+      if (resendCooldown === 0) {
+        // Don't pass navigate on resend - we're already on verify-email page
+        dispatch(sendOtp(signupData.email));
+        setResendCooldown(60); // 1 minute cooldown
+        setOtpCreatedTime(Date.now()); // Reset OTP creation time
+      }
+    }
+
+    // Calculate OTP expiry time
+    const getOtpExpiryTime = () => {
+      if (otpCreatedTime) {
+        const timeDiff = (Date.now() - otpCreatedTime) / 1000 / 60; // in minutes
+        if (timeDiff > 10) {
+          return "Expired";
+        }
+        return `${Math.ceil(10 - timeDiff)}m`;
+      }
+      return "10m";
+    }
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] grid place-items-center">
       {loading ? (
@@ -49,6 +95,9 @@ const VerifyEmail = () => {
           </h1>
           <p className="text-[1.125rem] leading-[1.625rem] my-4 text-richblack-100">
             A verification code has been sent to you. Enter the code below
+          </p>
+          <p className="text-sm text-richblack-400 mb-4">
+            OTP expires in: <span className="text-yellow-50 font-semibold">{getOtpExpiryTime()}</span>
           </p>
           <form onSubmit={handleVerifyAndSignup}>
             <OtpInput
@@ -84,11 +133,16 @@ const VerifyEmail = () => {
               </p>
             </Link>
             <button
-              className="flex items-center text-blue-100 gap-x-2"
-              onClick={() => dispatch(sendOtp(signupData.email))}
+              disabled={resendCooldown > 0}
+              className={`flex items-center gap-x-2 ${
+                resendCooldown > 0 
+                  ? 'text-richblack-400 cursor-not-allowed' 
+                  : 'text-blue-100 cursor-pointer hover:text-blue-200'
+              }`}
+              onClick={handleResendOtp}
             >
               <RxCountdownTimer />
-              Resend it
+              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend it"}
             </button>
           </div>
         </div>

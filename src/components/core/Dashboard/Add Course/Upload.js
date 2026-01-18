@@ -62,10 +62,12 @@ export default function Upload({
       <label className="text-sm text-richblack-5" htmlFor={name}>
         {label} {!viewData && <sup className="text-pink-200">*</sup>}
       </label>
+      <input {...getInputProps()} />
       <div
         className={`${
           isDragActive ? "bg-richblack-600" : "bg-richblack-700"
         } flex min-h-[250px] cursor-pointer items-center justify-center rounded-md border-2 border-dotted border-richblack-500`}
+        {...getRootProps()}
       >
         {previewSource ? (
           <div className="flex w-full flex-col p-6">
@@ -95,9 +97,7 @@ export default function Upload({
         ) : (
           <div
             className="flex w-full flex-col items-center p-6"
-            {...getRootProps()}
           >
-            <input {...getInputProps()} ref={inputRef} />
             <div className="grid aspect-square w-14 place-items-center rounded-full bg-pure-greys-800">
               <FiUploadCloud className="text-2xl text-yellow-50" />
             </div>

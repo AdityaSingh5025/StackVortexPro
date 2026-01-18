@@ -101,7 +101,6 @@ exports.showAllCourses = async (req,res) => {
 
 exports.getCourseDetails = async (req, res) => {
   try {
-    //get id
     const {courseId} = req.body;
     //find course details
     const courseDetails = await Course.findById(courseId)

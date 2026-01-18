@@ -34,10 +34,15 @@ export function sendOtp(email, navigate){
       }
 
       toast.success("OTP Sent Successfully")
-      navigate("/verify-email")
+      // Only navigate if navigate function is provided (not when resending from VerifyEmail)
+      if (navigate) {
+        navigate("/verify-email")
+      }
      } catch (error) {
       console.log("SENDOTP API ERROR............", error)
-      toast.error("Could Not Send OTP")
+      // Show specific backend error message or generic fallback
+      const errorMessage = error.response?.data?.message || error.message || "Could Not Send OTP"
+      toast.error(errorMessage)
      }
      dispatch(setLoading(false));
      toast.dismiss(toastId);

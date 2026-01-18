@@ -10,13 +10,10 @@ const {
   instructorDashboard,
 } = require("../controllers/Profile")
 
-
-// Importing Middlewares
 const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth")
-// ********************************************************************************************************
-//                                      Profile routes
-// ********************************************************************************************************
-// Delet User Account
+
+//                              Profile routes
+
 router.delete("/deleteProfile",auth,  deleteAccount)
 router.put("/updateProfile", auth, updateProfile)
 router.get("/getUserDetails", auth, getAllUserDetails)

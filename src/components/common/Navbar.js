@@ -36,6 +36,7 @@ const Navbar = () => {
     const location = useLocation();
 
     const [subLinks, setSubLinks] = useState([]);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const fetchSublinks = async () => {
         try {
@@ -161,9 +162,73 @@ const Navbar = () => {
 
                 </div>
 
-                <div className='mr-4 md:hidden text-[#AFB2BF] scale-150'>
+                <div className='mr-4 md:hidden text-[#AFB2BF] scale-150 cursor-pointer' onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                     <RxHamburgerMenu />
                 </div>
+
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className='absolute top-14 left-0 right-0 bg-richblack-800 border-b border-richblack-700 md:hidden z-50'>
+                        <nav className='flex flex-col'>
+                            <ul className='flex flex-col gap-y-4 p-4 text-richblack-25'>
+                                {
+                                    NavbarLinks && Array.isArray(NavbarLinks) ? NavbarLinks.map((link, index) => (
+                                        <li key={index} onClick={() => setMobileMenuOpen(false)}>
+                                            {
+                                                link.title === "Catalog" ? (
+                                                    <p className='text-richblack-25'>{link.title}</p>
+                                                ) : (
+                                                    <Link to={link?.path}>
+                                                        <p className={`${matchRoute(link?.path) ? "text-yellow-25" : "text-richblack-25"}`}>
+                                                            {link.title}
+                                                        </p>
+                                                    </Link>
+                                                )
+                                            }
+                                        </li>
+                                    )) : null
+                                }
+                            </ul>
+                        </nav>
+                        <div className='flex flex-col gap-y-4 border-t border-richblack-700 p-4'>
+                            {
+                                user && user?.accountType != "Instructor" && (
+                                    <Link to="/dashboard/cart" onClick={() => setMobileMenuOpen(false)} className='relative'>
+                                        <AiOutlineShoppingCart className='text-2xl text-richblack-100 ' />
+                                        {
+                                            totalItems > 0 && (
+                                                <span className=' absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-richblack-600 text-center text-xs font-bold text-yellow-100'>
+                                                    {totalItems}
+                                                </span>
+                                            )
+                                        }
+                                    </Link>
+                                )
+                            }
+                            {
+                                token === null && (
+                                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                                        <button className='w-full border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md'>
+                                            Log in
+                                        </button>
+                                    </Link>
+                                )
+                            }
+                            {
+                                token === null && (
+                                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                                        <button className='w-full border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md'>
+                                            Sign Up
+                                        </button>
+                                    </Link>
+                                )
+                            }
+                            {
+                                token !== null && <ProfileDropDown />
+                            }
+                        </div>
+                    </div>
+                )}
 
             </div>
         </div>

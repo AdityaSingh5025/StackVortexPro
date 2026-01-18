@@ -11,7 +11,7 @@ require('dotenv').config()
 exports.sendOtp = async (req, res) => {
     try {
         const { email } = req.body;
-        console.log("Email in senOtp controller", email)
+        
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -21,24 +21,13 @@ exports.sendOtp = async (req, res) => {
             })
         }
 
-        let otp = otpGenerator.generate(6, {
+        const otp = otpGenerator.generate(6, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
             specialChars: false,
         });
 
-
-        let result = await OTP.findOne({ otp: otp });
-
-        while (result) {
-            otp = otpGenerator.generate(6, {
-                upperCaseAlphabets: false,
-                lowerCaseAlphabets: false,
-                specialChars: false,
-            });
-            result = OTP.findOne({ otp: otp });
-        }
-        console.log("OTP generated", otp);
+        // console.log("OTP generated", otp);
 
         const createdOtp = await OTP.create({
             email,
@@ -110,9 +99,6 @@ exports.signUp = async (req, res) => {
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
-        let approved = "";
-        approved === "Instructor" ? (approved = false) : (approved = true);
-
         const profileDetails = await Profile.create({
             gender: null,
             dateOfBirth: null,
@@ -120,14 +106,12 @@ exports.signUp = async (req, res) => {
             contactNumer: null,
         });
 
-        console.log("Data received in signup is", firstName)
         const newUser = await User.create({
             firstName,
             lastName,
             email,
             password: hashedPwd,
             accountType,
-            approved: approved,
             additionalDetails: profileDetails._id,
             image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         })
@@ -207,10 +191,9 @@ exports.login = async (req, res) => {
     }
 }
 
-// Controller for Changing Password
+//  for Changing Password
 exports.changePassword = async (req, res) => {
     try {
-        // Get user data from req.user
         const userDetails = await User.findById(req.user.id);
 
         // Get old password, new password, and confirm new password from req.body
@@ -227,15 +210,6 @@ exports.changePassword = async (req, res) => {
                 .status(401)
                 .json({ success: false, message: "The password is incorrect" });
         }
-
-        // Match new password and confirm new password
-        // if (newPassword !== confirmNewPassword) {
-        // 	// If new password and confirm new password do not match, return a 400 (Bad Request) error
-        // 	return res.status(400).json({
-        // 		success: false,
-        // 		message: "The password and confirm password does not match",
-        // 	});
-        // }
 
         // Update password
         const encryptedPassword = await bcrypt.hash(newPassword, 10);
@@ -256,7 +230,7 @@ exports.changePassword = async (req, res) => {
             );
             console.log("Email sent successfully:", emailResponse.response);
         } catch (error) {
-            // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
+
             console.error("Error occurred while sending email:", error);
             return res.status(500).json({
                 success: false,
@@ -270,7 +244,6 @@ exports.changePassword = async (req, res) => {
             .status(200)
             .json({ success: true, message: "Password updated successfully" });
     } catch (error) {
-        // If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
         console.error("Error occurred while updating password:", error);
         return res.status(500).json({
             success: false,

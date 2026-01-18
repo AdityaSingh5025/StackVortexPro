@@ -1,0 +1,698 @@
+# StackVortex Pro - Visual Flow Diagrams
+
+## 1. User Registration Flow
+
+```
+┌─────────┐
+│  User   │
+│  Email  │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /sendotp       │
+│ - Check email exists│
+│ - Generate 6-digit   │
+│   OTP               │
+│ - Save to DB        │
+│   (5 min expiry)    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Pre-save Hook       │
+│ Send OTP Email      │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│  User   │
+│ Enters  │
+│ OTP +   │
+│ Details │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /signup        │
+│ - Verify OTP        │
+│ - Hash password     │
+│   (bcrypt, 10)      │
+│ - Create Profile    │
+│ - Create User       │
+│   (approved=false   │
+│    if Instructor)   │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 2. User Login Flow
+
+```
+┌─────────┐
+│  User   │
+│ Email + │
+│Password │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /login         │
+│ - Find user by email│
+│ - Populate Profile  │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Verify Password     │
+│ bcrypt.compare()    │
+└────┬────────────────┘
+     │
+     ├─── Invalid ──┐
+     │              │
+     ▼              ▼
+┌─────────┐    ┌─────────┐
+│ Valid   │    │ Invalid │
+│         │    │ 401     │
+└────┬────┘    └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Generate JWT        │
+│ Payload:            │
+│ - email             │
+│ - accountType       │
+│ - id                │
+│ Expires: 2h         │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Set HTTP-only       │
+│ Cookie (3 days)     │
+│ + Return token      │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 3. Course Creation Flow (Instructor)
+
+```
+┌─────────┐
+│Instructor│
+│ Creates │
+│ Course  │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /createCourse  │
+│ Middleware:         │
+│ - auth              │
+│ - isInstructor      │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Validate Fields     │
+│ - courseName        │
+│ - description       │
+│ - price             │
+│ - category          │
+│ - thumbnail         │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Upload Thumbnail    │
+│ to Cloudinary       │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Create Course       │
+│ Document            │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Update Category     │
+│ (push courseId)    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Update User         │
+│ (push courseId)    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 4. Course Content Creation Flow
+
+```
+┌─────────┐
+│Instructor│
+│ Adds    │
+│ Section │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /addSection    │
+│ - Create Section   │
+│ - Update Course    │
+│   (push sectionId)  │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│Instructor│
+│ Adds    │
+│SubSection│
+│ (Video) │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /addSubSection │
+│ - Upload video to   │
+│   Cloudinary        │
+│ - Extract duration  │
+│ - Create SubSection │
+│ - Update Section    │
+│   (push subSectionId)│
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 5. Payment & Enrollment Flow
+
+```
+┌─────────┐
+│ Student │
+│ Selects │
+│ Courses │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /capturePayment│
+│ - Validate courses  │
+│ - Check enrollment  │
+│   status            │
+│ - Calculate total   │
+│   amount            │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Create Razorpay     │
+│ Order               │
+│ - amount (paise)    │
+│ - currency (INR)    │
+│ - receipt           │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Frontend│
+│ Payment │
+│ UI      │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /verifyPayment │
+│ - Extract payment   │
+│   details           │
+│ - Verify signature  │
+│   (HMAC SHA256)     │
+└────┬────────────────┘
+     │
+     ├─── Invalid ──┐
+     │              │
+     ▼              ▼
+┌─────────┐    ┌─────────┐
+│ Valid   │    │ Invalid │
+│         │    │ Reject  │
+└────┬────┘    └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ enrollStudents()    │
+│ For each course:    │
+│ - Update Course     │
+│   (push userId)     │
+│ - Create            │
+│   CourseProgress    │
+│ - Update User       │
+│   (push courseId)   │
+│ - Send enrollment   │
+│   email             │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 6. Course Progress Tracking Flow
+
+```
+┌─────────┐
+│ Student │
+│ Watches │
+│ Video   │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /updateCourse  │
+│ Progress            │
+│ - Find SubSection   │
+│ - Find CourseProgress│
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Check if already    │
+│ completed           │
+└────┬────────────────┘
+     │
+     ├─── Yes ──┐
+     │         │
+     ▼         ▼
+┌─────────┐ ┌─────────┐
+│ Already │ │ New     │
+│ Done    │ │         │
+└─────────┘ └────┬────┘
+                 │
+                 ▼
+┌─────────────────────┐
+│ Push subSectionId   │
+│ to completedVideos   │
+│ array               │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Save CourseProgress │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 7. Rating & Review Flow
+
+```
+┌─────────┐
+│ Student │
+│ Rates   │
+│ Course  │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /createRating  │
+│ - Check enrollment  │
+│   status            │
+└────┬────────────────┘
+     │
+     ├─── Not Enrolled ──┐
+     │                   │
+     ▼                   ▼
+┌─────────┐         ┌─────────┐
+│ Enrolled│         │ Reject  │
+│         │         │ 404     │
+└────┬────┘         └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Check if already    │
+│ reviewed            │
+└────┬────────────────┘
+     │
+     ├─── Yes ──┐
+     │         │
+     ▼         ▼
+┌─────────┐ ┌─────────┐
+│ Already │ │ New     │
+│ Reviewed│ │         │
+└─────────┘ └────┬────┘
+                 │
+                 ▼
+┌─────────────────────┐
+│ Create RatingAnd    │
+│ Review document     │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Update Course       │
+│ (push ratingId)    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 8. Password Reset Flow
+
+```
+┌─────────┐
+│  User   │
+│ Forgot  │
+│Password │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /reset-password│
+│ -token              │
+│ - Validate email    │
+│ - Check user exists │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Generate UUID token │
+│ Update User:        │
+│ - token             │
+│ - resetPasswordExpires│
+│   (now + 5 min)     │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Send reset link     │
+│ via email           │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│  User   │
+│ Clicks  │
+│ Link    │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ POST /reset-password│
+│ - Validate token    │
+│ - Check expiry      │
+│ - Verify passwords  │
+│   match             │
+└────┬────────────────┘
+     │
+     ├─── Invalid ──┐
+     │              │
+     ▼              ▼
+┌─────────┐    ┌─────────┐
+│ Valid   │    │ Invalid │
+│         │    │ Reject  │
+└────┬────┘    └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Hash new password   │
+│ Update User         │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 9. Authentication Middleware Flow
+
+```
+┌─────────┐
+│ Request │
+│ Arrives │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Extract Token       │
+│ From:               │
+│ - req.body.token    │
+│ - req.cookies.token │
+│ - Authorization     │
+│   header            │
+└────┬────────────────┘
+     │
+     ├─── No Token ──┐
+     │              │
+     ▼              ▼
+┌─────────┐    ┌─────────┐
+│ Token   │    │ 401     │
+│ Found   │    │ Error   │
+└────┬────┘    └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Verify JWT          │
+│ jwt.verify()        │
+└────┬────────────────┘
+     │
+     ├─── Invalid ──┐
+     │              │
+     ▼              ▼
+┌─────────┐    ┌─────────┐
+│ Valid   │    │ 401     │
+│         │    │ Error   │
+└────┬────┘    └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Attach to req.user  │
+│ { email,            │
+│   accountType,      │
+│   id }              │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Role Check          │
+│ (if needed)        │
+│ - isStudent         │
+│ - isInstructor      │
+│ - isAdmin           │
+└────┬────────────────┘
+     │
+     ├─── Unauthorized ──┐
+     │                   │
+     ▼                   ▼
+┌─────────┐         ┌─────────┐
+│ Authorized│       │ 401     │
+│         │         │ Error   │
+└────┬────┘         └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Controller         │
+│ Execution          │
+└────────────────────┘
+```
+
+---
+
+## 10. Course Deletion Flow
+
+```
+┌─────────┐
+│Instructor│
+│ Deletes │
+│ Course  │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ DELETE /deleteCourse│
+│ - Find course       │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Unenroll Students   │
+│ For each student:   │
+│ - Remove courseId   │
+│   from User.courses│
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Delete Sections     │
+│ For each section:   │
+│ - Delete all        │
+│   SubSections       │
+│ - Delete Section    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Delete CourseProgress│
+│ Documents           │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Remove from Category│
+│ (pull courseId)    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Delete Course       │
+│ Document            │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 11. Average Rating Calculation Flow
+
+```
+┌─────────┐
+│ Request │
+│ Course  │
+│ Rating  │
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ GET /getAverageRating│
+│ - Extract courseId  │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ MongoDB Aggregation │
+│ Pipeline:           │
+│ 1. $match:          │
+│    {course: courseId}│
+│ 2. $group:          │
+│    {averageRating:  │
+│     $avg: "$rating"}│
+└────┬────────────────┘
+     │
+     ├─── No Ratings ──┐
+     │                 │
+     ▼                 ▼
+┌─────────┐       ┌─────────┐
+│ Result  │       │ Return  │
+│ Found   │       │ 0       │
+└────┬────┘       └─────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Return Average      │
+│ Rating              │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## 12. Instructor Dashboard Flow
+
+```
+┌─────────┐
+│Instructor│
+│ Requests │
+│ Dashboard│
+└────┬────┘
+     │
+     ▼
+┌─────────────────────┐
+│ GET /instructor     │
+│ Dashboard           │
+│ Middleware:         │
+│ - auth              │
+│ - isInstructor      │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Find all courses    │
+│ by instructor ID    │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ For each course:    │
+│ - Count enrolled    │
+│   students          │
+│ - Calculate revenue │
+│   (students × price)│
+└────┬────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ Return course stats │
+│ with revenue        │
+└────┬────────────────┘
+     │
+     ▼
+┌─────────┐
+│ Success │
+└─────────┘
+```
+
+---
+
+## Key Symbols Legend
+- `┌────┐` = Process/Function
+- `│    │` = Flow continuation
+- `▼` = Downward flow
+- `├───` = Decision branch
+- `└────┘` = End/Result

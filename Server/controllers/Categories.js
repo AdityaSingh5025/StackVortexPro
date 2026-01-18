@@ -89,21 +89,26 @@ exports.categoryPageDetails = async (req,res) => {
   
       // Get courses for other categories
       const categoriesExceptSelected = await Category.find({
-        _id: { $ne: categoryId },
-        course: { $not: { $size: 0 } }
+        _id: { $ne: categoryId }
       })
       console.log("categoriesExceptSelected", categoriesExceptSelected)
-      let differentCourses = await Category.findOne(
-        categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]
-          ._id
-      )
-        .populate({
-          path: "course",
-          match: { status: "Published" },
-          populate: "ratingAndReviews",
-        })
-        .exec()
-        //console.log("Different COURSE", differentCourses)
+      
+      let differentCourses = null
+      
+      // Only populate differentCourses if there are other categories
+      if (categoriesExceptSelected && categoriesExceptSelected.length > 0) {
+        const randomIndex = getRandomInt(categoriesExceptSelected.length)
+        differentCourses = await Category.findOne(
+          { _id: categoriesExceptSelected[randomIndex]._id }
+        )
+          .populate({
+            path: "course",
+            match: { status: "Published" },
+            populate: "ratingAndReviews",
+          })
+          .exec()
+      }
+      
       // Get top-selling courses across all categories
       const allCategories = await Category.find()
         .populate({
@@ -112,7 +117,7 @@ exports.categoryPageDetails = async (req,res) => {
           populate: "ratingAndReviews",
         })
         .exec()
-      const allCourses = allCategories.flatMap((category) => category.courses)
+      const allCourses = allCategories.flatMap((category) => category.course)
       const mostSellingCourses = await Course.find({ status: 'Published' })
       .sort({ "studentsEnrolled.length": -1 }).populate("ratingAndReviews") // Sort by studentsEnrolled array length in descending order
       .exec();
