@@ -25,8 +25,8 @@ const MyCourses = () => {
 
   return (
     <div>
-      <div className="mb-14 flex items-center justify-between">
-        <h1 className=' text-3xl font-medium text-richblack-5'>My Courses</h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3 md:mb-14">
+        <h1 className='text-2xl font-medium text-richblack-5 md:text-3xl'>My Courses</h1>
         <IconBtn text="Add Course" 
         onclick={() => navigate("/dashboard/add-course")}>
           <VscAdd/>

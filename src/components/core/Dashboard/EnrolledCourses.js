@@ -40,22 +40,23 @@ const EnrolledCourses = () => {
       </p>
     ) : (
       <div className="my-8 text-richblack-5">
-        {/* Headings */}
-        <div className="flex rounded-t-lg bg-richblack-500 ">
+        {/* Table Header - hidden on mobile */}
+        <div className="hidden sm:flex rounded-t-lg bg-richblack-500">
           <p className="w-[45%] px-5 py-3">Course Name</p>
           <p className="w-1/4 px-2 py-3">Duration</p>
           <p className="flex-1 px-2 py-3">Progress</p>
         </div>
-        {/* Course Names */}
+        {/* Course rows */}
         {enrolledCourses.map((course, i, arr) => (
           <div
-            className={`flex items-center border border-richblack-700 ${
+            className={`flex flex-col sm:flex-row sm:items-center border border-richblack-700 ${
               i === arr.length - 1 ? "rounded-b-lg" : "rounded-none"
-            }`}
+            } ${ i === 0 ? "sm:rounded-none rounded-t-lg" : "" }`}
             key={i}
           >
+            {/* Course name + thumbnail */}
             <div
-              className="flex w-[45%] cursor-pointer items-center gap-4 px-5 py-3"
+              className="flex w-full sm:w-[45%] cursor-pointer items-center gap-4 px-5 py-3"
               onClick={() => {
                 navigate(
                   `/view-course/${course?._id}/section/${course.courseContent?.[0]?._id}/sub-section/${course.courseContent?.[0]?.subSection?.[0]?._id}`
@@ -65,7 +66,7 @@ const EnrolledCourses = () => {
               <img
                 src={course.thumbnail}
                 alt="course_img"
-                className="h-14 w-14 rounded-lg object-cover"
+                className="h-14 w-14 rounded-lg object-cover flex-shrink-0"
               />
               <div className="flex max-w-xs flex-col gap-2">
                 <p className="font-semibold">{course.courseName}</p>
@@ -76,14 +77,20 @@ const EnrolledCourses = () => {
                 </p>
               </div>
             </div>
-            <div className="w-1/4 px-2 py-3">{course?.totalDuration}</div>
-            <div className="flex w-1/5 flex-col gap-2 px-2 py-3">
-              <p>Progress: {course.progressPercentage || 0}%</p>
-              <ProgressBar
-                completed={course.progressPercentage || 0}
-                height="8px"
-                isLabelVisible={false}
-              />
+            {/* Duration + progress — inline on mobile */}
+            <div className="flex items-center justify-between px-5 pb-3 sm:contents">
+              <div className="sm:w-1/4 sm:px-2 sm:py-3">
+                <span className="text-xs text-richblack-400 sm:hidden mr-1">Duration:</span>
+                {course?.totalDuration}
+              </div>
+              <div className="flex flex-col gap-2 sm:w-1/5 sm:px-2 sm:py-3">
+                <p>Progress: {course.progressPercentage || 0}%</p>
+                <ProgressBar
+                  completed={course.progressPercentage || 0}
+                  height="8px"
+                  isLabelVisible={false}
+                />
+              </div>
             </div>
           </div>
         ))}

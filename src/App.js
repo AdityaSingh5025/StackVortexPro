@@ -32,6 +32,8 @@ import VideoDetails from "./components/core/ViewCourse/VideoDetails";
 import Instructor from "./components/core/Dashboard/Instructor"
 import toast from "react-hot-toast";
 
+import { MobileMenuProvider } from "./context/MobileMenuContext";
+
 function App() {
 
   const dispatch = useDispatch();
@@ -39,6 +41,7 @@ function App() {
 
   const { user } = useSelector((state) => state.profile)
   return (
+    <MobileMenuProvider>
     <div className="w-screen min-h-screen bg-[#000814] flex flex-col font-inter" >
       <Navbar />
       <Routes>
@@ -145,6 +148,7 @@ function App() {
         <Route path="*" element={<Error />} />
       </Routes>
     </div>
+    </MobileMenuProvider>
   );
 }
 

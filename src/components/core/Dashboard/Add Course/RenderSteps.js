@@ -54,11 +54,11 @@ const RenderSteps = () => {
         </div>
 
         {/* Steps titles */}
-      <div className="relative mb-16 flex w-full select-none justify-between">
+      <div className="relative mb-8 md:mb-16 flex w-full select-none justify-between">
         {steps.map((item) => (
           <>
             <div
-              className="flex min-w-[130px] flex-col items-center gap-y-2"
+              className="flex flex-1 flex-col items-center gap-y-1 text-center"
               key={item.id}
             >
               

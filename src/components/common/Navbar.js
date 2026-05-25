@@ -11,6 +11,7 @@ import { categories } from '../../services/apis'
 import { useState } from 'react'
 import { IoIosArrowDown } from "react-icons/io"
 import { RxHamburgerMenu } from "react-icons/rx"
+import { useMobileMenu } from '../../context/MobileMenuContext'
 import './loader.css'
 // Ḍemo temporary data
 // const subLinks = [
@@ -36,7 +37,7 @@ const Navbar = () => {
     const location = useLocation();
 
     const [subLinks, setSubLinks] = useState([]);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isNavbarOpen, toggleNavbar, closeAll } = useMobileMenu();
 
     const fetchSublinks = async () => {
         try {
@@ -162,18 +163,18 @@ const Navbar = () => {
 
                 </div>
 
-                <div className='mr-4 md:hidden text-[#AFB2BF] scale-150 cursor-pointer' onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                <div className='mr-4 md:hidden text-[#AFB2BF] scale-150 cursor-pointer' onClick={toggleNavbar}>
                     <RxHamburgerMenu />
                 </div>
 
                 {/* Mobile Menu */}
-                {mobileMenuOpen && (
+                {isNavbarOpen && (
                     <div className='absolute top-14 left-0 right-0 bg-richblack-800 border-b border-richblack-700 md:hidden z-50'>
                         <nav className='flex flex-col'>
                             <ul className='flex flex-col gap-y-4 p-4 text-richblack-25'>
                                 {
                                     NavbarLinks && Array.isArray(NavbarLinks) ? NavbarLinks.map((link, index) => (
-                                        <li key={index} onClick={() => setMobileMenuOpen(false)}>
+                                        <li key={index} onClick={() => closeAll()}>
                                             {
                                                 link.title === "Catalog" ? (
                                                     <p className='text-richblack-25'>{link.title}</p>
@@ -193,7 +194,7 @@ const Navbar = () => {
                         <div className='flex flex-col gap-y-4 border-t border-richblack-700 p-4'>
                             {
                                 user && user?.accountType != "Instructor" && (
-                                    <Link to="/dashboard/cart" onClick={() => setMobileMenuOpen(false)} className='relative'>
+                                    <Link to="/dashboard/cart" onClick={() => closeAll()} className='relative'>
                                         <AiOutlineShoppingCart className='text-2xl text-richblack-100 ' />
                                         {
                                             totalItems > 0 && (
@@ -207,7 +208,7 @@ const Navbar = () => {
                             }
                             {
                                 token === null && (
-                                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                                    <Link to="/login" onClick={() => closeAll()}>
                                         <button className='w-full border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md'>
                                             Log in
                                         </button>
@@ -216,7 +217,7 @@ const Navbar = () => {
                             }
                             {
                                 token === null && (
-                                    <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
+                                    <Link to="/signup" onClick={() => closeAll()}>
                                         <button className='w-full border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100 rounded-md'>
                                             Sign Up
                                         </button>
