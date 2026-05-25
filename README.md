@@ -40,7 +40,7 @@ StackVortex Pro is a fully functional EdTech platform that enables users to crea
 -   [Mongoose](https://mongoosejs.com/) - ODM for MongoDB.
 -   [Cloudinary](https://cloudinary.com/) - Cloud storage for images and videos.
 -   [Razorpay](https://razorpay.com/) - Payment gateway.
--   [Nodemailer](https://nodemailer.com/) - Email sending service.
+-   [Brevo](https://www.brevo.com/) - Transactional email API.
 
 ## 🏗️ System Architecture
 
@@ -69,9 +69,9 @@ Create a `.env` file in the `Server` directory with the following:
 ```env
 PORT=4000
 MONGODB_URL=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dbname>
-MAIL_HOST=smtp.gmail.com
-MAIL_USER=<your_email>
-MAIL_PASS=<your_email_password>
+BREVO_API_KEY=<your_brevo_api_key>
+BREVO_SENDER_EMAIL=<verified_sender_email_in_brevo>
+BREVO_SENDER_NAME=Aditya Singh - StackVortex
 JWT_SECRET=<your_jwt_secret>
 FOLDER_NAME=<cloudinary_folder_name>
 RAZORPAY_KEY=<razorpay_key>
