@@ -1,0 +1,5 @@
+{"sessionId":"11fc5a","runId":"pre-fix","hypothesisId":"B","location":"auth.js:isStudent","message":"isStudent middleware","data":{"accountType":"Student","path":"/createRating","allowed":true},"timestamp":1779698645427}
+{"sessionId":"11fc5a","runId":"pre-fix","hypothesisId":"B,E","location":"RatingAndReview.js:createRating:entry","message":"createRating called","data":{"accountType":"Student","hasCourseId":true,"hasRating":true,"hasReview":true,"userIdType":"string"},"timestamp":1779698645433}
+{"sessionId":"11fc5a","runId":"pre-fix","hypothesisId":"C","location":"RatingAndReview.js:createRating:enrollment","message":"enrollment check","data":{"isEnrolled":true},"timestamp":1779698645529}
+{"sessionId":"11fc5a","runId":"pre-fix","hypothesisId":"A","location":"RatingAndReview.js:createRating:duplicateCheck","message":"duplicate review check","data":{"alreadyReviewed":true,"existingReviewId":"6a140a84f65a2d2c59b36b7a"},"timestamp":1779698645622}
+{"sessionId":"11fc5a","runId":"post-fix","hypothesisId":"A","location":"RatingAndReview.js:createRating:403","message":"returning 403 already reviewed and linked","data":{},"timestamp":1779698645624}

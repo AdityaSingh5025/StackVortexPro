@@ -34,6 +34,9 @@ exports.auth = async (req,res, next) => {
 
 exports.isStudent = async(req,res,next) => {
     try{
+        // #region agent log
+        fetch('http://127.0.0.1:7646/ingest/ec754675-8073-46a1-b65d-24961d47e677',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'11fc5a'},body:JSON.stringify({sessionId:'11fc5a',runId:'pre-fix',hypothesisId:'B',location:'auth.js:isStudent',message:'isStudent middleware',data:{accountType:req.user?.accountType,path:req.path,allowed:req.user?.accountType==='Student'},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         if(req.user.accountType !== "Student") {
             return res.status(401).json({
                 success:false,

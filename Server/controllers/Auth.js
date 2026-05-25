@@ -8,11 +8,21 @@ const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 require('dotenv').config()
 
+const normalizeEmail = (email) => email?.trim().toLowerCase();
+
 exports.sendOtp = async (req, res) => {
     try {
         const { email } = req.body;
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required",
+            });
+        }
         
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: normalizedEmail });
 
         if (existingUser) {
             return res.status(401).json({
@@ -30,7 +40,7 @@ exports.sendOtp = async (req, res) => {
         // console.log("OTP generated", otp);
 
         const createdOtp = await OTP.create({
-            email,
+            email: normalizedEmail,
             otp
         })
 
@@ -74,7 +84,16 @@ exports.signUp = async (req, res) => {
             })
         }
 
-        const existingUser = await User.findOne({ email });
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required",
+            });
+        }
+
+        const existingUser = await User.findOne({ email: normalizedEmail });
 
         if (existingUser) {
             return res.status(401).json({
@@ -83,14 +102,17 @@ exports.signUp = async (req, res) => {
             })
         }
 
-        const recentOtp = await OTP.find({ email }).sort({ createdAt: -1 }).limit(1);
-        console.log("Otp in signup page is:", recentOtp[0].otp)
-        if (recentOtp.length == 0) {
+        const recentOtpRecord = await OTP.findOne({ email: normalizedEmail })
+            .sort({ createdAt: -1 });
+
+        if (!recentOtpRecord) {
             return res.status(400).json({
                 success: false,
-                message: 'OTP Not Found',
-            })
-        } else if (otp !== recentOtp[0].otp) {
+                message: "OTP not found or expired. Please request a new OTP.",
+            });
+        }
+
+        if (String(otp).trim() !== String(recentOtpRecord.otp).trim()) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid OTP",
@@ -109,10 +131,12 @@ exports.signUp = async (req, res) => {
         const safeAccountType =
             accountType === "Instructor" ? "Instructor" : "Student";
 
+        await OTP.deleteMany({ email: normalizedEmail });
+
         const newUser = await User.create({
             firstName,
             lastName,
-            email,
+            email: normalizedEmail,
             password: hashedPwd,
             accountType: safeAccountType,
             additionalDetails: profileDetails._id,

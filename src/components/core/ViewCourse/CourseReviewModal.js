@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux'
+import toast from 'react-hot-toast'
 import IconBtn from '../../common/IconBtn';
 import { createRating } from '../../../services/operations/courseDetailsAPI';
 import ReactStars from "react-rating-stars-component";
@@ -28,12 +29,18 @@ const CourseReviewModal = ({setReviewModal}) => {
     }
 
     const onSubmit = async (data)=>{
-        await createRating({
+        if (!data.courseRating || data.courseRating < 1) {
+            toast.error("Please select a star rating before submitting")
+            return
+        }
+        const success = await createRating({
             courseId: courseEntireData._id,
             rating: data.courseRating,
             review: data.courseExperience
         }, token)
-        setReviewModal(false)
+        if (success) {
+            setReviewModal(false)
+        }
     }
   return (
     <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
