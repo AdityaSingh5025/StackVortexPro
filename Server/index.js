@@ -14,8 +14,11 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload");
+const { globalLimiter } = require("./middlewares/rateLimiter");
 
 const PORT = process.env.PORT || 4000;
+
+app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -33,6 +36,8 @@ app.use(
 );
 
 cloudinaryConnect();
+
+app.use(globalLimiter);
 
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoutes);

@@ -106,12 +106,15 @@ exports.signUp = async (req, res) => {
             contactNumer: null,
         });
 
+        const safeAccountType =
+            accountType === "Instructor" ? "Instructor" : "Student";
+
         const newUser = await User.create({
             firstName,
             lastName,
             email,
             password: hashedPwd,
-            accountType,
+            accountType: safeAccountType,
             additionalDetails: profileDetails._id,
             image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
         })
